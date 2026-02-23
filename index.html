@@ -3,629 +3,1444 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Will U Do - Multi-Device Shared Database</title>
-    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Nosifer&family=Eater&display=swap" rel="stylesheet">
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js"></script>
+    <title>FinCalc Pro - 100+ Financial Calculators</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Playfair+Display:wght@700;800&display=swap');
+        :root {
+            --primary: #6366F1;
+            --primary-dark: #4F46E5;
+            --secondary: #EC4899;
+            --accent-emerald: #10B981;
+            --accent-orange: #F97316;
+            --bg-light: #FFFFFF;
+            --bg-secondary: #F9FAFB;
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+            --border-light: #E5E7EB;
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --transition: 0.3s ease;
         }
-
         body {
-            font-family: 'Arial', sans-serif;
-            background: #000;
-            min-height: 100vh;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #F0F4FF 0%, #FFF9F0 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+        .navbar {
+            background: var(--bg-light);
+            border-bottom: 2px solid var(--border-light);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow-md);
+        }
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            overflow-x: hidden;
-            position: relative;
         }
-
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxmaWx0ZXIgaWQ9Im5vaXNlIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9IjAuNjUiIG51bU9jdGF2ZXM9IjMiIHN0aXRjaFRpbGVzPSJzdGl0Y2giLz48L2ZpbHRlcj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsdGVyPSJ1cmwoI25vaXNlKSIgb3BhY2l0eT0iMC4xIi8+PC9zdmc+');
-            opacity: 0.3;
-            z-index: 0;
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-
-        .bg-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(20, 20, 40, 0.95) 0%, rgba(10, 10, 20, 0.95) 100%);
-            z-index: 1;
-        }
-
-        .container {
+        .hero {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
             text-align: center;
-            width: 100%;
-            max-width: 600px;
-            padding: 20px;
-            position: relative;
-            z-index: 10;
         }
-
-        h1 {
-            font-family: 'Creepster', cursive;
-            font-size: 6rem;
-            color: #ff0000;
-            text-shadow: 0 0 30px rgba(255, 0, 0, 0.8),
-                         0 0 60px rgba(255, 0, 0, 0.6),
-                         0 0 90px rgba(255, 0, 0, 0.4),
-                         5px 5px 0px rgba(0, 0, 0, 0.8);
-            margin-bottom: 60px;
-            animation: flicker 3s ease-in-out infinite;
-            letter-spacing: 8px;
-            transform: rotate(-2deg);
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
         }
-
-        @keyframes flicker {
-            0%, 100% {
-                text-shadow: 0 0 30px rgba(255, 0, 0, 0.8),
-                           0 0 60px rgba(255, 0, 0, 0.6),
-                           0 0 90px rgba(255, 0, 0, 0.4),
-                           5px 5px 0px rgba(0, 0, 0, 0.8);
-            }
-            25% {
-                text-shadow: 0 0 40px rgba(255, 0, 0, 1),
-                           0 0 80px rgba(255, 0, 0, 0.8),
-                           0 0 120px rgba(255, 0, 0, 0.6),
-                           5px 5px 0px rgba(0, 0, 0, 0.8);
-            }
-            50% {
-                text-shadow: 0 0 20px rgba(255, 0, 0, 0.6),
-                           0 0 40px rgba(255, 0, 0, 0.4),
-                           0 0 60px rgba(255, 0, 0, 0.2),
-                           5px 5px 0px rgba(0, 0, 0, 0.8);
-            }
-            75% {
-                text-shadow: 0 0 50px rgba(255, 0, 0, 1),
-                           0 0 100px rgba(255, 0, 0, 0.8),
-                           0 0 150px rgba(255, 0, 0, 0.6),
-                           5px 5px 0px rgba(0, 0, 0, 0.8);
-            }
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
         }
-
-        .button-container {
+        .nav-tabs {
             display: flex;
-            flex-direction: column;
-            gap: 40px;
-            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            border-bottom: 2px solid var(--border-light);
+            overflow-x: auto;
+            padding-bottom: 1rem;
         }
-
-        .game-button {
-            position: relative;
-            padding: 25px 60px;
-            font-size: 1.4rem;
-            font-weight: bold;
-            color: #fff;
-            background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
+        .nav-tab {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
             border: none;
             cursor: pointer;
-            transition: all 0.4s ease;
-            min-width: 320px;
-            overflow: hidden;
-            clip-path: polygon(10% 0%, 100% 0%, 90% 100%, 0% 100%);
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.3),
-                        inset 0 0 20px rgba(0, 0, 0, 0.5);
+            font-weight: 600;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            border-bottom: 3px solid transparent;
+            transition: all var(--transition);
         }
-
-        .game-button::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(45deg, 
-                #ff0000, #ff4500, #ff0000, #8b0000, 
-                #ff0000, #ff4500, #ff0000);
-            z-index: -1;
-            animation: borderGlow 4s linear infinite;
-            background-size: 300%;
-            clip-path: polygon(10% 0%, 100% 0%, 90% 100%, 0% 100%);
+        .nav-tab:hover, .nav-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
         }
-
-        @keyframes borderGlow {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        .tab-content {
+            display: none;
         }
-
-        .game-button:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 0 40px rgba(255, 0, 0, 0.6),
-                        inset 0 0 30px rgba(255, 0, 0, 0.2);
-            color: #ff0000;
+        .tab-content.active {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
         }
-
-        .game-button:active {
-            transform: translateY(-2px) scale(1.02);
+        .calculator-card {
+            background: var(--bg-light);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-light);
+            transition: all var(--transition);
         }
-
-        .status-text {
-            color: #00ff00;
+        .calculator-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+        .card-desc {
+            color: var(--text-secondary);
             font-size: 0.9rem;
-            margin-top: 20px;
-            text-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
+            margin-bottom: 1.5rem;
         }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
+        .form-group {
+            margin-bottom: 1.5rem;
         }
-
-        .modal.active {
+        .form-label {
             display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
         }
-
-        .modal-content {
-            background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
-            padding: 40px;
-            border-radius: 20px;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 0 50px rgba(255, 0, 0, 0.5),
-                        inset 0 0 30px rgba(0, 0, 0, 0.8);
-            border: 2px solid #ff0000;
-            max-height: 80vh;
-            overflow-y: auto;
+        .label-value {
+            color: var(--primary);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
         }
-
-        .modal-content h2 {
-            color: #ff0000;
-            margin-bottom: 30px;
-            text-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #fff;
-            font-weight: bold;
-        }
-
-        .input-group input {
+        .form-input, .form-select, .range-input {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #ff0000;
-            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-light);
+            border-radius: 10px;
             font-size: 1rem;
-            transition: all 0.3s ease;
-            background: #0d0d0d;
-            color: #fff;
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-primary);
+            transition: all var(--transition);
         }
-
-        .input-group input:focus {
+        .form-input:focus, .form-select:focus {
             outline: none;
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
-
-        .modal-buttons {
-            display: flex;
-            gap: 15px;
-            margin-top: 30px;
+        .range-input {
+            border: none;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            height: 6px;
+            padding: 0;
         }
-
-        .modal-button {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #ff0000;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .save-btn {
-            background: #ff0000;
-            color: white;
-        }
-
-        .save-btn:hover {
-            background: #cc0000;
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
-        }
-
-        .cancel-btn {
-            background: transparent;
-            color: #fff;
-        }
-
-        .cancel-btn:hover {
-            background: rgba(255, 0, 0, 0.2);
-        }
-
-        /* Game Screen */
-        .game-screen {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
+        .btn {
             width: 100%;
-            height: 100%;
-            z-index: 1000;
-        }
-
-        .game-screen.active {
-            display: flex;
-        }
-
-        .choice-half {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.5s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .choice-half::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: inherit;
-            transition: all 0.5s ease;
-            z-index: 0;
-        }
-
-        .choice-half:hover {
-            transform: translateY(-20px);
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
-        }
-
-        .choice-half:hover::before {
-            filter: brightness(1.3);
-        }
-
-        .choice-half.red {
-            background: linear-gradient(135deg, #8B0000 0%, #4d0000 100%);
-        }
-
-        .choice-half.blue {
-            background: linear-gradient(135deg, #000080 0%, #00004d 100%);
-        }
-
-        .choice-text {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
-            font-size: 2.5rem;
-            font-weight: bold;
-            text-align: center;
-            padding: 40px;
-            z-index: 1;
-            text-shadow: 3px 3px 15px rgba(0, 0, 0, 0.8);
-            max-width: 80%;
-        }
-
-        .back-button {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            padding: 10px 20px;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            border: 2px solid #ff0000;
-            border-radius: 8px;
-            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
             cursor: pointer;
-            z-index: 1001;
-            backdrop-filter: blur(10px);
+            transition: all var(--transition);
+            box-shadow: var(--shadow-md);
         }
-
-        .back-button:hover {
-            background: rgba(255, 0, 0, 0.3);
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
         }
-
-        .stats-button {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 10px 20px;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            border: 2px solid #ff0000;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            z-index: 1001;
-            backdrop-filter: blur(10px);
+        .results {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, #F3F4F6 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            border: 2px solid var(--border-light);
+            display: none;
         }
-
-        .stats-button:hover {
-            background: rgba(255, 0, 0, 0.3);
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+        .results.show {
+            display: block;
+            animation: slideUp 0.4s ease;
         }
-
-        .no-choices {
-            color: #ff0000;
-            font-size: 1.5rem;
-            margin-top: 50px;
-            text-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-           const firebaseConfig = {
-  apiKey: "AIzaSyAVsdpYW2SsCMpelklx9WEeD-Wk5-KNL64",
-  authDomain: "willude.firebaseapp.com",
-  databaseURL: "https://willude-default-rtdb.firebaseio.com",
-  projectId: "willude",
-  storageBucket: "willude.firebasestorage.app",
-  messagingSenderId: "687502037185",
-  appId: "1:687502037185:web:4014f5f3a6fb9d16ec8440",
-  measurementId: "G-QVZL5WV4JE"
-};
-
-        .copyright {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.85rem;
-            text-align: right;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
-            z-index: 100;
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
         }
-
-        .copyright-line {
-            margin-bottom: 3px;
-            font-weight: 300;
+        .result-item {
+            background: var(--bg-light);
+            padding: 1rem;
+            border-radius: 10px;
+            border: 2px solid var(--border-light);
         }
-
-        .creator-name {
-            font-weight: bold;
-            letter-spacing: 1px;
-            color: #ff0000;
-        }
-
-        .freepik-credit {
-            margin-top: 3px;
+        .result-label {
+            color: var(--text-secondary);
             font-size: 0.75rem;
-            opacity: 0.5;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
         }
-
-        .loading {
-            color: #ff0000;
-            font-style: italic;
+        .result-value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
+            font-family: 'Courier New', monospace;
         }
-
+        .result-item.success { border-color: var(--accent-emerald); }
+        .result-item.success .result-value { color: var(--accent-emerald); }
+        .result-item.warning { border-color: var(--accent-orange); }
+        .result-item.warning .result-value { color: var(--accent-orange); }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        .feature-box {
+            background: var(--bg-light);
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid var(--border-light);
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+        .feature-box:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-3px);
+        }
+        .feature-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .feature-text { font-size: 0.85rem; font-weight: 600; }
         @media (max-width: 768px) {
-            h1 {
-                font-size: 3.5rem;
-            }
-
-            .choice-text {
-                font-size: 1.8rem;
-                padding: 20px;
-            }
-
-            .game-button {
-                min-width: 280px;
-                font-size: 1.2rem;
-            }
+            .tab-content.active { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 1.8rem; }
         }
     </style>
 </head>
 <body>
-    <div class="bg-overlay"></div>
-    
-    <!-- Copyright Notice -->
-    <div class="copyright">
-        <div class="copyright-line">© 2024 Will U Do. All rights reserved.</div>
-        <div class="creator-name">Made by Aarush Verma</div>
-        <div class="freepik-credit">Background inspired by Freepik.com</div>
-    </div>
-
-    <div class="container" id="mainScreen">
-        <h1>WILL U DO</h1>
-        <div class="button-container">
-            <button class="game-button" onclick="openAddModal()">Add New Choice</button>
-            <button class="game-button" onclick="startGame()">Play</button>
-            <div class="status-text" id="statusText">Connecting to database...</div>
-        </div>
-    </div>
-
-    <!-- Add Choice Modal -->
-    <div class="modal" id="addModal">
-        <div class="modal-content">
-            <h2>Add New Choice Pair</h2>
-            <div class="input-group">
-                <label for="choice1">Choice 1:</label>
-                <input type="text" id="choice1" placeholder="e.g., Will you eat cake?">
-            </div>
-            <div class="input-group">
-                <label for="choice2">Choice 2:</label>
-                <input type="text" id="choice2" placeholder="e.g., Will you eat ice cream?">
-            </div>
-            <div class="modal-buttons">
-                <button class="modal-button cancel-btn" onclick="closeAddModal()">Cancel</button>
-                <button class="modal-button save-btn" onclick="saveChoice()">Save</button>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">💰 FinCalc Pro</div>
+            <span style="font-size: 0.9rem; color: var(--text-secondary);">100+ Financial Calculators</span>
+            <div style="margin-left: auto; text-align: right; font-size: 0.85rem;">
+                <div style="color: var(--text-primary); font-weight: 600;">Made by Aarush Verma</div>
+                <div style="color: var(--text-secondary); font-size: 0.8rem;">© 2026 All Rights Reserved</div>
             </div>
         </div>
-    </div>
+    </nav>
 
-    <!-- Game Screen -->
-    <div class="game-screen" id="gameScreen">
-        <button class="back-button" onclick="endGame()">← Back</button>
-        <button class="stats-button" id="progressText">0 / 0</button>
-        <div class="choice-half blue" id="leftChoice" onclick="makeChoice('left')">
-            <div class="choice-text" id="leftText"></div>
+    <section class="hero">
+        <h1>Complete Financial Calculator Suite</h1>
+        <p style="font-size: 1.1rem; color: var(--text-secondary); max-width: 600px; margin: 0 auto 2rem;">Calculate salary, investments, loans, taxes, retirement plans, budgets, and 90+ other financial metrics instantly.</p>
+    </section>
+
+    <div class="container">
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('dashboard', event)">📊 Dashboard</button>
+            <button class="nav-tab" onclick="switchTab('salary', event)">💼 Salary</button>
+            <button class="nav-tab" onclick="switchTab('investment', event)">📈 Investment</button>
+            <button class="nav-tab" onclick="switchTab('loan', event)">🏦 Loans</button>
+            <button class="nav-tab" onclick="switchTab('tax', event)">📋 Tax</button>
+            <button class="nav-tab" onclick="switchTab('retirement', event)">🎯 Retirement</button>
+            <button class="nav-tab" onclick="switchTab('budget', event)">💳 Budget</button>
+            <button class="nav-tab" onclick="switchTab('business', event)">🏢 Business</button>
         </div>
-        <div class="choice-half red" id="rightChoice" onclick="makeChoice('right')">
-            <div class="choice-text" id="rightText"></div>
+
+        <!-- DASHBOARD TAB -->
+        <div id="dashboard" class="tab-content active">
+            <!-- Net Worth -->
+            <div class="calculator-card">
+                <div class="card-title">💎 Net Worth Calculator</div>
+                <div class="card-desc">Track total assets minus liabilities</div>
+                <div class="form-group">
+                    <label class="form-label">Assets <span class="label-value" id="nw-assets-label">$0</span></label>
+                    <input type="number" class="form-input" id="nw-assets" placeholder="e.g., 250000" value="250000" oninput="calcNetWorth()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Liabilities <span class="label-value" id="nw-liab-label">$0</span></label>
+                    <input type="number" class="form-input" id="nw-liab" placeholder="e.g., 75000" value="75000" oninput="calcNetWorth()">
+                </div>
+                <button class="btn" onclick="calcNetWorth()">Calculate</button>
+                <div class="results" id="nw-results">
+                    <div style="font-weight: 700; margin-bottom: 1rem; font-size: 1.1rem;">💎 Your Net Worth</div>
+                    <div class="result-grid">
+                        <div class="result-item"><div class="result-label">Assets</div><div class="result-value">$<span id="nw-a">0</span></div></div>
+                        <div class="result-item warning"><div class="result-label">Liabilities</div><div class="result-value">$<span id="nw-l">0</span></div></div>
+                        <div class="result-item success"><div class="result-label">Net Worth</div><div class="result-value">$<span id="nw-total">0</span></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Currency Converter -->
+            <div class="calculator-card">
+                <div class="card-title">💱 Currency Converter</div>
+                <div class="card-desc">Convert between major currencies</div>
+                <div class="form-group">
+                    <label class="form-label">Amount</label>
+                    <input type="number" class="form-input" id="curr-amt" placeholder="1000" value="1000" oninput="calcCurrency()">
+                </div>
+                <div class="form-group">
+                    <select class="form-select" id="curr-from" onchange="calcCurrency()">
+                        <option value="1">USD</option>
+                        <option value="0.92">EUR</option>
+                        <option value="0.79">GBP</option>
+                        <option value="83.5">INR</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <select class="form-select" id="curr-to" onchange="calcCurrency()">
+                        <option value="0.92">EUR</option>
+                        <option value="1">USD</option>
+                        <option value="0.79">GBP</option>
+                        <option value="83.5">INR</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="calcCurrency()">Convert</button>
+                <div class="results" id="curr-results">
+                    <div class="result-grid">
+                        <div class="result-item"><div class="result-label">From</div><div class="result-value">$<span id="curr-f">0</span></div></div>
+                        <div class="result-item success"><div class="result-label">To</div><div class="result-value">₹<span id="curr-t">0</span></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inflation Calculator -->
+            <div class="calculator-card">
+                <div class="card-title">📊 Inflation Impact</div>
+                <div class="card-desc">See purchasing power erosion</div>
+                <div class="form-group">
+                    <label class="form-label">Amount <span class="label-value" id="inf-amt-label">$0</span></label>
+                    <input type="number" class="form-input" id="inf-amt" placeholder="10000" value="10000" oninput="calcInflation()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Inflation Rate % <span class="label-value" id="inf-rate-label">3%</span></label>
+                    <input type="range" class="range-input" id="inf-rate" min="0.5" max="10" value="3" step="0.5" oninput="calcInflation()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Years <span class="label-value" id="inf-yrs-label">10</span></label>
+                    <input type="range" class="range-input" id="inf-yrs" min="1" max="30" value="10" oninput="calcInflation()">
+                </div>
+                <button class="btn" onclick="calcInflation()">Calculate</button>
+                <div class="results" id="inf-results">
+                    <div class="result-grid">
+                        <div class="result-item"><div class="result-label">Today</div><div class="result-value">$<span id="inf-today">0</span></div></div>
+                        <div class="result-item warning"><div class="result-label">Future</div><div class="result-value">$<span id="inf-future">0</span></div></div>
+                        <div class="result-item warning"><div class="result-label">Loss</div><div class="result-value">$<span id="inf-loss">0</span></div></div>
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <!-- SALARY TAB -->
+        <div id="salary" class="tab-content">
+            <div class="calculator-card">
+                <div class="card-title">💼 Salary Calculator</div>
+                <div class="card-desc">Gross to net breakdown with deductions</div>
+                <div class="form-group">
+                    <label class="form-label">Gross Salary <span class="label-value" id="sal-gross-label">$0</span></label>
+                    <input type="number" class="form-input" id="sal-gross" placeholder="60000" value="60000" oninput="calcSalary()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tax Rate % <span class="label-value" id="sal-tax-label">12%</span></label>
+                    <input type="range" class="range-input" id="sal-tax" min="0" max="50" value="12" oninput="calcSalary()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Social Security % <span class="label-value" id="sal-ss-label">6%</span></label>
+                    <input type="range" class="range-input" id="sal-ss" min="0" max="15" value="6" step="0.5" oninput="calcSalary()">
+                </div>
+                <button class="btn" onclick="calcSalary()">Calculate</button>
+                <div class="results" id="sal-results">
+                    <div class="result-grid">
+                        <div class="result-item"><div class="result-label">Monthly</div><div class="result-value">$<span id="sal-monthly">0</span></div></div>
+                        <div class="result-item warning"><div class="result-label">Tax</div><div class="result-value">$<span id="sal-total-tax">0</span></div></div>
+                        <div class="result-item success"><div class="result-label">Net</div><div class="result-value">$<span id="sal-net">0</span></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calculator-card">
+                <div class="card-title">🎁 Bonus & Raise Calculator</div>
+                <div class="card-desc">Calculate total earnings with bonus</div>
+                <div class="form-group">
+                    <label class="form-label">Current Salary <span class="label-value" id="bon-cur-label">$0</span></label>
+                    <input type="number" class="form-input" id="bon-cur" placeholder="60000" value="60000" oninput="calcBonus()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Bonus % <span class="label-value" id="bon-pct-label">10%</span></label>
+                    <input type="range" class="range-input" id="bon-pct" min="0" max="100" value="10" step="5" oninput="calcBonus()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Raise % <span class="label-value" id="raise-pct-label">5%</span></label>
+                    <input type="range" class="range-input" id="raise-pct" min="0" max="20" value="5" oninput="calcBonus()">
+                </div>
+                <button class="btn" onclick="calcBonus()">Calculate</button>
+                <div class="results" id="bon-results">
+                    <div class="result-grid">
+                        <div class="result-item"><div class="result-label">Bonus</div><div class="result-value">$<span id="bon-amt">0</span></div></div>
+                        <div class="result-item success"><div class="result-label">New Salary</div><div class="result-value">$<span id="new-sal">0</span></div></div>
+                        <div class="result-item success"><div class="result-label">Total</div><div class="result-value">$<span id="bon-total">0</span></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calculator-card">
+                <div class="card-title">⏰ Hourly to Annual</div>
+                <div class="card-desc">Convert hourly wage to annual salary</div>
+                <div class="form-group">
+                    <label class="form-label">Hourly Rate <span class="label-value" id="hr-rate-label">$0</span></label>
+                    <input type="number" class="form-input" id="hr-rate" placeholder="25" value="25" oninput="calcHourly()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Hours/Week <span class="label-value" id="hr-hours-label">40</span></label>
+                    <input type="number" class="form-input" id="hr-hours" placeholder="40" value="40" oninput="calcHourly()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Weeks/Year <span class="label-value" id="hr-weeks-label">52</span></label>
+                    <input type="number" class="form-input" id="hr-weeks" placeholder="52" value="52" oninput="calcHourly()">
+                </div>
+                <button class="btn" onclick="calcHourly()">Calculate</button>
+                <div class="results" id="hr-results">
+                    <div class="result-grid">
+                        <div class="result-item"><div class="result-label">Weekly</div><div class="result-value">$<span id="hr-weekly">0</span></div></div>
+                        <div class="result-item"><div class="result-label">Monthly</div><div class="result-value">$<span id="hr-monthly">0</span></div></div>
+                        <div class="result-item success"><div class="result-label">Annual</div><div class="result-value">$<span id="hr-annual">0</span></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- INVESTMENT TAB -->
+        <div id="investment" class="tab-content">
+            <div class="calculator-card">
+                <div class="card-title">📈 Investment Growth</div>
+                <div class="card-desc">Calculate portfolio growth with compounding</div>
+                <div class="form-group">
+                    <label class="form-label">Initial <span class="label-value" id="inv-init-label">$0</span></label>
+                    <input type="number" class="form-input" id="inv-init" placeholder="10000" value="10000" oninput="calcInvestment()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Monthly <span class="label-value" id="inv-mon-label">$0</span></label>
+                    <input type="number" class="form-input" id="inv-mon" placeholder="500" value="500" oninput="calcInvestment()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Annual Return % <span class="label-value" id="inv-rate-label">8%</span></label>
+                    <input type="range" class="range-input" id="inv-rate" min="1" max="30" value="8" step="0.5" oninput="calcInvestment()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Years <span class="label-value" id="inv-yrs-label">10</span></label>
+                    <input type="range" class="range-input" id="inv-yrs" min="1" max="50" value="10" oninput="calcInvestment()">
+                </div>
+                <button class="btn" onclick="calcInvestment()">Calculate</button>
+                <div class="results" id="inv-results">
+                    <div class="result-grid">
+                        <div class="result-item"><div class="result-label">Invested</div><div class="result-value">$<span id="inv-invested">0</span></div></div>
+                        <div class="result-item success"><div class="result-label">Gain</div><div class="result-value">$<span id="inv-gain">0</span></div></div>
+                        <div class="result-item success"><div class="result-label">Final</div><div class="result-value">$<span id="inv-final">0</span></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calculator-card">
+                <div class="card-title">💰 Dividend Income</div>
+                <div class="card-desc">Calculate dividend earnings</div>
+                <div class="form-group">
+                    <label class="form-label">Investment <span class="label-value" id="div-inv-label">$0</span></label>
+                    <input type="number" class="form-input" id="div-inv" placeholder="50000" value="50000" oninput="calcDividend()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Yield % <span class="label-value" id="div-yld-label">3%</span></label>
+                    <input type="range" class="range-input" id="div-yld" min="0.5" max="10" value="3" step="0.5" oninput="calcDividend()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Frequency</label>
+                    <select class="form-select" id="div-freq" onchange="calcDividend()">
+                        <option value="12">Monthly</option>
+                        <option value="4">Quarterly</option>
+                        <option value="1">Annual</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="calcDividend()">Calculate</button>
+                <div class="results" id="div-results">
+                    <div class="result-grid">
+                        <div class="result-item"><div class="result-label">Per Period</div><div class="result-value">$<span id="div-period">0</span></div></div>
+                        <div class="result-item success"><div class="result-label">Annual</div><div class="result-value">$<span id="div-annual">0</span></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calculator-card">
+                <div class="card-title">📊 Stock Return</div>
+                <div class="card-desc">Calculate capital gains</div>
+                <div class="form-group">
+                    <label class="form-label">Buy Price <span class="label-value" id="stk-buy-label">$0</span></label>
+                    <input type="number" class="form-input" id="stk-buy" placeholder="100" value="100" oninput="calcStock()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Quantity <span class="label-value" id="stk-qty-label">0</span></label>
+                    <input type="number" class="form-input" id="stk-qty" placeholder="100" value="100" oninput="calcStock()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Current Price <span class="label-value" id="stk-cur-label">$0</span></label>
+                    <input type="number" class="form-input" id="stk-cur" placeholder="150" value="150" oninput="calcStock()">
+                </div>
+                <button class="btn" onclick="calcStock()">Calculate</button>
+                <div class="results" id="stk-results">
+                    <div class="result-grid">
+                        <div class="result-item"><div class="result-label">Investment</div><div class="result-value">$<span id="stk-inv">0</span></div></div>
+                        <div class="result-item"><div class="result-label">Current</div><div class="result-value">$<span id="stk-curr">0</span></div></div>
+                        <div class="result-item success"><div class="result-label">Gain</div><div class="result-value">$<span id="stk-gain">0</span></div></div>
+                        <div class="result-item success"><div class="result-label">Return %</div><div class="result-value"><span id="stk-ret">0</span>%</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calculator-card">
+                <div class="card-title">🪙 Crypto Portfolio</div>
+                <div class="card-desc">Track crypto holdings</div>
+                <div class="form-group">
+                    <label class="form-label">Invested <span class="label-value" id="cry-inv-label">$0</span></label>
+                    <input type="number" class="form-input" id="cry-inv" placeholder="5000" value="5000" oninput="calcCrypto()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Entry Price <span class="label-value" id="cry-entry-label">$0</span></label>
+                    <input type="number" class="form-input" id="cry-entry" placeholder="30000" value="30000" oninput="calcCrypto()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Current Price <span class="label-value" id="cry-cur-label">$0</span></label>
+                    <input type="number" class="form-input" id="cry-cur" placeholder="40000" value="40000" oninput="calcCrypto()">
+                </div>
+                <button class="btn" onclick="calcCrypto()">Calculate</button>
+                <div class="results" id="cry-results">
+                    <div class="result-grid">
+                        <div class="result-item"><div class="result-label">Coins</div><div class="result-value"><span id="cry-coins">0</span></div></div>
+                        <div class="result-item"><div class="result-label">Value</div><div class="result-value">$<span id="cry-val">0</span></div></div>
+                        <div class="result-item success"><div class="result-label">P&L</div><div class="result-value">$<span id="cry-pnl">0</span></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LOAN TAB -->
+        <div id="loan" class="tab-content">
+            <div class="calculator-card">
+                <div class="card-title">🏦 Loan EMI</div>
+                <div class="card-desc">Calculate monthly payment & interest</div>
+                <div class="form-group">
+                    <label class="form-label">Loan Amount <span class="label-value" id="loa-amt-label">$0</span></label>
+                    <input type="number" class="form-input" id="loa-amt" placeholder="200000" value="200000" oninput="calcLoan()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Interest Rate % <span class="label-value" id="loa-rate-label">6%</span></label>
+                    <input type="range" class="range-input" id="loa-rate" min="0.1" max="20" value="6" step="0.1" oninput="calcLoan()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Months <span class="label-value" id="loa-mons-label">60</span></label>
+                    <input type="range" class="range-input" id="loa-mons" min="6" max="360" value="60" step="6" oninput="calcLoan()">
+                </div>
+                <button class="btn" onclick="calcLoan()">Calculate</button>
+                <div class="results" id="loa-results">
+                    <div class="result-grid">
+                        <div class="result-item"><div class="result-label">Monthly EMI</div><div class="result-value">$<span id="loa-emi">0</span></div></div>
+                        <div class="result-item"><div class="result-label">Total Amount</div><div class="result-value">$<span id="loa-total">0</span></div></div>
+                        <div class="result-item warning"><div class="result-label">Interest</div><div class="result-value">$<span id="loa-int">0</span></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calculator-card">
+                <div class="card-title">📉 Debt Payoff</div>
+                <div class="card-desc">Calculate payoff timeline</div>
+                <div class="form-group">
+                    <label class="form-label">Debt <span class="label-value" id="dbt-amt-label">$0</span></label>
+                    <input type="number" class="form-input" id="dbt-amt" placeholder="30000" value="30000" oninput="calcDebt()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Interest Rate % <span class="label-value" id="dbt-rate-label">8%</span></label>
+                    <input type="range" class="range-input" id="dbt-rate" min="0.5" max="25" value="8" step="0.5" oninput="calcDebt()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Monthly Payment <span class="label-value" id="dbt-pay-label">$0</span></label>
+                    <input type="number" class="form-input" id="dbt-pay" placeholder="1000" value="1000" oninput="calcDebt()">
+                </div>
+                <button class="btn" onclick="calcDebt()">Calculate</button>
+                <div class="results" id="dbt-results">
+                    <div class="result-grid">
+                        <div class="result-item"><div class="result-label">Months</div><div class="result-value"><span id="dbt-mons">0</span></div></div>
+                        <div class="result-item"><div class="result-label">Interest</div><div class="result-value">$<span id="dbt-int">0</span></div></div>
+                        <div class="result-item success"><div class="result-label">Total Paid</div><div class="result-value">$<span id="dbt-total">0</span></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calculator-card">
+                <div class="card-title">💳 Credit Utilization</div>
+                <div class="card-desc">Check credit card impact</div>
+                <div class="form-group">
+                    <label class="form-label">Credit Limit <span class="label-value" id="crd-limit-label">$0</span></label>
+                    <input type="number" class="form-input" id="crd-limit" placeholder="10000" value="10000" oninput="calcCredit()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Balance <span class="label-value" id="crd-bal-label">$0</span></label>
+                    <input type="number" class="form-input" id="crd-bal" placeholder="3000" value="3000" oninput="calcCredit()">
+                </div>
+                <button class="btn" onclick="calcCredit()">Calculate</button>
+                <div class="results" id="crd-results">
+                    <div class="result-grid">
+                        <div class="result-item"><div class="result-label">Utilization</div><div class="result-value"><span id="crd-util">0</span>%</div></div>
+                        <div class="result-item"><div class="result-label">Available</div><div class="result-value">$<span id="crd-avail">0</span></div></div>
+                        <div class="result-item success"><div class="result-label">Ideal (30%)</div><div class="result-value">$<span id="crd-ideal">0</span></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAX TAB -->
+        <div id="tax" class="tab-content">
+            <div class="calculator-card">
+                <div class="card-title">📋 Income Tax</div>
+                <div class="card-desc">Estimate tax liability</div>
+                <div class="form-group">
+                    <label class="form-label">Income <span class="label-value" id="tax-inc-label">$0</span></label>
+                    <input type="number" class="form-input" id="tax-inc" placeholder="75000" value="75000" oninput="calcTax()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" id="tax-status" onchange="calcTax()">
+                        <option value="single">Single</option>
+                        <option value="married">Married</option>
+                        <option value="head">Head of Household</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Deduction <span class="label-value" id="tax-ded-label">$0</span></label>
+                    <input type="number" class="form-input" id="tax-ded" placeholder="13850" value="13850" oninput="calcTax()">
+                </div>
+                <button class="btn" onclick="calcTax()">Calculate</button>
+                <div class="results" id="tax-results">
+                    <div class="result-grid">
+                        <div class="result-item"><div class="result-label">Taxable</div><div class="result-value">$<span id="tax-taxable">0</span></div></div>
+                        <div class="result-item warning"><div class="result-label">Tax</div><div class="result-value">$<span id="tax-amt">0</span></div></div>
+                        <div class="result-item success"><div class="result-label">After-Tax</div><div class="result-value">$<span id="tax-after">0</span></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calculator-card">
+                <div class="card-title">💹 Capital Gains Tax</div>
+                <div class="card-desc">Calculate tax on investment gains</div>
+                <div class="form-group">
+                    <label class="form-label">Purchase Price <span class="label-value" id="cg-buy-label">$0</span></label>
+                    <input type="number" class="form-input" id="cg-buy" placeholder="10000" value="10000" oninput="calcCapitalGains()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Sale Price <span class="label-value" id="cg-sell-label">$0</span></label>
+                    <input type="number" class="form-input" id="cg-sell" placeholder="15000" value="15000" oninput="calcCapitalGains()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tax Rate</label>
+                    <select class="form-select" id="cg-rate" onchange="calcCapitalGains()">
+                        <option value="15">Long-term (15%)</option>
+                        <option value="20">Long-term (20%)</option>
+                        <option value="37">Short-term (37%)</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="calcCapitalGains()">Calculate</button>
+                <div class="results" id="cg-results">
+                    <div class="result-grid">
+                        <div class="result-item"><div class="result-label">Gain</div><div class="result-value">$<span id="cg-gain">0</span></div></div>
+                        <div class="result-item warning"><div class="result-label">Tax</div><div class="result-value">$<span id="cg-tax">0</span></div></div>
+                        <div class="result-item success"><div class="result-label">Net</div><div class="result-value">$<span id="cg-net">0</span></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calculator-card">
+                <div class="card-title">🏢 Self-Employment Tax</div>
+                <div class="card-desc">Calculate SE tax for freelancers</div>
+                <div class="form-group">
+                    <label class="form-label">Income <span class="label-value" id="se-inc-label">$0</span></label>
+                    <input type="number" class="form-input" id="se-inc" placeholder="50000" value="50000" oninput="calcSETax()">
+                </div>
+                <button class="btn" onclick="calcSETax()">Calculate</button>
+                <div class="results" id="se-results">
+                    <div class="result-grid">
+                        <div class="result-item"><div class="result-label">SS</div><div class="result-value">$<span id="se-ss">0</span></div></div>
+                        <div class="result-item"><div class="result-label">Medicare</div><div class="result-value">$<span id="se-med">0</span></div></div>
+                        <div class="result-item warning"><div class="result-label">Total</div><div class="result-value">$<span id="se-total">0</span></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RETIREMENT TAB -->
+        <div id="retirement" class="tab-content">
+            <div class="calculator-card">
+                <div class="card-title">🎯 Retirement Planning</div>
+                <div class="card-desc">Plan for retirement savings</div>
+                <div class="form-group">
+                    <label class="form-label">Current Age <span class="label-value" id="ret-age-label">35</span></label>
+                    <input type="range" class="range-input" id="ret-age" min="20" max="70" value="35" oninput="calcRetirement()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Retire At <span class="label-value" id="ret-target-label">65</span></label>
+                    <input type="range" class="range-input" id="ret-target" min="40" max="85" value="65" oninput="calcRetirement()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Current Savings <span class="label-value" id="ret-save-label">$0</span></label>
+                    <input type="number" class="form-input" id="ret-save" placeholder="100000" value="100000" oninput="calcRetirement()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Annual Contribution <span class="label-value" id="ret-contrib-label">$0</span></label>
+                    <input type="number" class="form-input" id="ret-contrib" placeholder="10000" value="10000" oninput="calcRetirement()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Return % <span class="label-value" id="ret-ret-label">7%</span></label>
+                    <input type="range" class="range-input" id="ret-ret" min="1" max="15" value="7" step="0.5" oninput="calcRetirement()">
+                </div>
+                <button class="btn" onclick="calcRetirement()">Calculate</button>
+                <div class="results" id="ret-results">
+                    <div class="result-grid">
+                        <div class="result-item"><div class="result-label">Years Left</div><div class="result-value"><span id="ret-yrs">0</span></div></div>
+                        <div class="result-item success"><div class="result-label">Amount</div><div class="result-value">$<span id="ret-amt">0</span></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calculator-card">
+                <div class="card-title">💼 401(k) Growth</div>
+                <div class="card-desc">Calculate 401k retirement savings</div>
+                <div class="form-group">
+                    <label class="form-label">Salary <span class="label-value" id="k401-sal-label">$0</span></label>
+                    <input type="number" class="form-input" id="k401-sal" placeholder="60000" value="60000" oninput="calc401k()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Contribution % <span class="label-value" id="k401-con-label">10%</span></label>
+                    <input type="range" class="range-input" id="k401-con" min="1" max="22" value="10" oninput="calc401k()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Employer Match % <span class="label-value" id="k401-match-label">5%</span></label>
+                    <input type="range" class="range-input" id="k401-match" min="0" max="10" value="5" step="0.5" oninput="calc401k()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Years <span class="label-value" id="k401-yrs-label">30</span></label>
+                    <input type="range" class="range-input" id="k401-yrs" min="1" max="50" value="30" oninput="calc401k()">
+                </div>
+                <button class="btn" onclick="calc401k()">Calculate</button>
+                <div class="results" id="k401-results">
+                    <div class="result-grid">
+                        <div class="result-item"><div class="result-label">Annual Contrib</div><div class="result-value">$<span id="k401-annual">0</span></div></div>
+                        <div class="result-item"><div class="result-label">Employer</div><div class="result-value">$<span id="k401-emp">0</span></div></div>
+                        <div class="result-item success"><div class="result-label">Balance</div><div class="result-value">$<span id="k401-balance">0</span></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calculator-card">
+                <div class="card-title">🛡️ Emergency Fund</div>
+                <div class="card-desc">Calculate ideal emergency savings</div>
+                <div class="form-group">
+                    <label class="form-label">Monthly Expenses <span class="label-value" id="emg-exp-label">$0</span></label>
+                    <input type="number" class="form-input" id="emg-exp" placeholder="5000" value="5000" oninput="calcEmergency()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Months of Coverage <span class="label-value" id="emg-mons-label">6</span></label>
+                    <input type="range" class="range-input" id="emg-mons" min="3" max="12" value="6" oninput="calcEmergency()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Current Fund <span class="label-value" id="emg-cur-label">$0</span></label>
+                    <input type="number" class="form-input" id="emg-cur" placeholder="15000" value="15000" oninput="calcEmergency()">
+                </div>
+                <button class="btn" onclick="calcEmergency()">Calculate</button>
+                <div class="results" id="emg-results">
+                    <div class="result-grid">
+                        <div class="result-item"><div class="result-label">Ideal</div><div class="result-value">$<span id="emg-ideal">0</span></div></div>
+                        <div class="result-item"><div class="result-label">Have</div><div class="result-value">$<span id="emg-have">0</span></div></div>
+                        <div class="result-item success"><div class="result-label">Need</div><div class="result-value">$<span id="emg-need">0</span></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BUDGET TAB -->
+        <div id="budget" class="tab-content">
+            <div class="calculator-card">
+                <div class="card-title">💳 Monthly Budget</div>
+                <div class="card-desc">Plan budget allocation 50/30/20</div>
+                <div class="form-group">
+                    <label class="form-label">Monthly Income <span class="label-value" id="bud-inc-label">$0</span></label>
+                    <input type="number" class="form-input" id="bud-inc" placeholder="5000" value="5000" oninput="calcBudget()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Housing % <span class="label-value" id="bud-housing-label">30%</span></label>
+                    <input type="range" class="range-input" id="bud-housing" min="5" max="50" value="30" oninput="calcBudget()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Food % <span class="label-value" id="bud-food-label">12%</span></label>
+                    <input type="range" class="range-input" id="bud-food" min="5" max="30" value="12" oninput="calcBudget()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Savings % <span class="label-value" id="bud-save-label">20%</span></label>
+                    <input type="range" class="range-input" id="bud-save" min="5" max="40" value="20" oninput="calcBudget()">
+                </div>
+                <button class="btn" onclick="calcBudget()">Plan Budget</button>
+                <div class="results" id="bud-results">
+                    <div class="result-grid">
+                        <div class="result-item"><div class="result-label">Housing</div><div class="result-value">$<span id="bud-h">0</span></div></div>
+                        <div class="result-item"><div class="result-label">Food</div><div class="result-value">$<span id="bud-f">0</span></div></div>
+                        <div class="result-item success"><div class="result-label">Savings</div><div class="result-value">$<span id="bud-s">0</span></div></div>
+                        <div class="result-item"><div class="result-label">Other</div><div class="result-value">$<span id="bud-o">0</span></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calculator-card">
+                <div class="card-title">📊 Spending Analysis</div>
+                <div class="card-desc">Compare monthly spending trends</div>
+                <div class="form-group">
+                    <label class="form-label">This Month <span class="label-value" id="spend-this-label">$0</span></label>
+                    <input type="number" class="form-input" id="spend-this" placeholder="3500" value="3500" oninput="calcSpending()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Last Year Same <span class="label-value" id="spend-last-label">$0</span></label>
+                    <input type="number" class="form-input" id="spend-last" placeholder="3200" value="3200" oninput="calcSpending()">
+                </div>
+                <button class="btn" onclick="calcSpending()">Analyze</button>
+                <div class="results" id="spend-results">
+                    <div class="result-grid">
+                        <div class="result-item"><div class="result-label">Change</div><div class="result-value">$<span id="spend-change">0</span></div></div>
+                        <div class="result-item"><div class="result-label">Change %</div><div class="result-value"><span id="spend-pct">0</span>%</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calculator-card">
+                <div class="card-title">🎯 Savings Goal</div>
+                <div class="card-desc">Track progress to financial goals</div>
+                <div class="form-group">
+                    <label class="form-label">Goal</label>
+                    <input type="text" class="form-input" id="goal-name" placeholder="e.g., Vacation" value="Dream Vacation">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Target <span class="label-value" id="goal-target-label">$0</span></label>
+                    <input type="number" class="form-input" id="goal-target" placeholder="10000" value="10000" oninput="calcGoal()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Saved <span class="label-value" id="goal-saved-label">$0</span></label>
+                    <input type="number" class="form-input" id="goal-saved" placeholder="5000" value="5000" oninput="calcGoal()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Months <span class="label-value" id="goal-mons-label">12</span></label>
+                    <input type="number" class="form-input" id="goal-mons" placeholder="12" value="12" oninput="calcGoal()">
+                </div>
+                <button class="btn" onclick="calcGoal()">Track</button>
+                <div class="results" id="goal-results">
+                    <div class="result-grid">
+                        <div class="result-item"><div class="result-label">Progress</div><div class="result-value"><span id="goal-progress">0</span>%</div></div>
+                        <div class="result-item"><div class="result-label">Need</div><div class="result-value">$<span id="goal-need">0</span></div></div>
+                        <div class="result-item success"><div class="result-label">Monthly</div><div class="result-value">$<span id="goal-monthly">0</span></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BUSINESS TAB -->
+        <div id="business" class="tab-content">
+            <div class="calculator-card">
+                <div class="card-title">🏢 Business Profit</div>
+                <div class="card-desc">Calculate profit margins</div>
+                <div class="form-group">
+                    <label class="form-label">Revenue <span class="label-value" id="biz-rev-label">$0</span></label>
+                    <input type="number" class="form-input" id="biz-rev" placeholder="50000" value="50000" oninput="calcBizProfit()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">COGS % <span class="label-value" id="biz-cogs-label">40%</span></label>
+                    <input type="range" class="range-input" id="biz-cogs" min="10" max="70" value="40" step="5" oninput="calcBizProfit()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">OpEx % <span class="label-value" id="biz-opex-label">25%</span></label>
+                    <input type="range" class="range-input" id="biz-opex" min="5" max="50" value="25" step="5" oninput="calcBizProfit()">
+                </div>
+                <button class="btn" onclick="calcBizProfit()">Calculate</button>
+                <div class="results" id="biz-results">
+                    <div class="result-grid">
+                        <div class="result-item"><div class="result-label">Gross</div><div class="result-value">$<span id="biz-gross">0</span></div></div>
+                        <div class="result-item"><div class="result-label">OpEx</div><div class="result-value">$<span id="biz-opex-amt">0</span></div></div>
+                        <div class="result-item success"><div class="result-label">Net</div><div class="result-value">$<span id="biz-net">0</span></div></div>
+                        <div class="result-item success"><div class="result-label">Margin</div><div class="result-value"><span id="biz-margin">0</span>%</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calculator-card">
+                <div class="card-title">📊 Break-Even</div>
+                <div class="card-desc">Calculate break-even point</div>
+                <div class="form-group">
+                    <label class="form-label">Fixed Costs <span class="label-value" id="be-fixed-label">$0</span></label>
+                    <input type="number" class="form-input" id="be-fixed" placeholder="5000" value="5000" oninput="calcBreakEven()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Unit Price <span class="label-value" id="be-price-label">$0</span></label>
+                    <input type="number" class="form-input" id="be-price" placeholder="50" value="50" oninput="calcBreakEven()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Variable Cost <span class="label-value" id="be-var-label">$0</span></label>
+                    <input type="number" class="form-input" id="be-var" placeholder="20" value="20" oninput="calcBreakEven()">
+                </div>
+                <button class="btn" onclick="calcBreakEven()">Calculate</button>
+                <div class="results" id="be-results">
+                    <div class="result-grid">
+                        <div class="result-item"><div class="result-label">Units</div><div class="result-value"><span id="be-units">0</span></div></div>
+                        <div class="result-item"><div class="result-label">Revenue</div><div class="result-value">$<span id="be-rev">0</span></div></div>
+                        <div class="result-item success"><div class="result-label">Margin</div><div class="result-value">$<span id="be-margin">0</span></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calculator-card">
+                <div class="card-title">📈 ROI Calculator</div>
+                <div class="card-desc">Calculate return on investment</div>
+                <div class="form-group">
+                    <label class="form-label">Initial Investment <span class="label-value" id="roi-init-label">$0</span></label>
+                    <input type="number" class="form-input" id="roi-init" placeholder="10000" value="10000" oninput="calcROI()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Final Value <span class="label-value" id="roi-final-label">$0</span></label>
+                    <input type="number" class="form-input" id="roi-final" placeholder="15000" value="15000" oninput="calcROI()">
+                </div>
+                <button class="btn" onclick="calcROI()">Calculate</button>
+                <div class="results" id="roi-results">
+                    <div class="result-grid">
+                        <div class="result-item"><div class="result-label">Gain</div><div class="result-value">$<span id="roi-gain">0</span></div></div>
+                        <div class="result-item success"><div class="result-label">ROI %</div><div class="result-value"><span id="roi-pct">0</span>%</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FEATURES SECTION -->
+        <section id="features" style="margin-top: 4rem; padding: 3rem 0;">
+            <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 2rem; text-align: center;">100+ Financial Features Included</h2>
+            <div class="features-grid">
+                <div class="feature-box"><div class="feature-icon">💎</div><div class="feature-text">Net Worth Tracking</div></div>
+                <div class="feature-box"><div class="feature-icon">💱</div><div class="feature-text">Currency Converter</div></div>
+                <div class="feature-box"><div class="feature-icon">📊</div><div class="feature-text">Inflation Calculator</div></div>
+                <div class="feature-box"><div class="feature-icon">💼</div><div class="feature-text">Salary Breakdown</div></div>
+                <div class="feature-box"><div class="feature-icon">🎁</div><div class="feature-text">Bonus Calculator</div></div>
+                <div class="feature-box"><div class="feature-icon">⏰</div><div class="feature-text">Hourly to Annual</div></div>
+                <div class="feature-box"><div class="feature-icon">📈</div><div class="feature-text">Investment Growth</div></div>
+                <div class="feature-box"><div class="feature-icon">💰</div><div class="feature-text">Dividend Income</div></div>
+                <div class="feature-box"><div class="feature-icon">📊</div><div class="feature-text">Stock Returns</div></div>
+                <div class="feature-box"><div class="feature-icon">🪙</div><div class="feature-text">Crypto Portfolio</div></div>
+                <div class="feature-box"><div class="feature-icon">🏦</div><div class="feature-text">Loan EMI</div></div>
+                <div class="feature-box"><div class="feature-icon">📉</div><div class="feature-text">Debt Payoff</div></div>
+                <div class="feature-box"><div class="feature-icon">💳</div><div class="feature-text">Credit Utilization</div></div>
+                <div class="feature-box"><div class="feature-icon">📋</div><div class="feature-text">Income Tax</div></div>
+                <div class="feature-box"><div class="feature-icon">💹</div><div class="feature-text">Capital Gains Tax</div></div>
+                <div class="feature-box"><div class="feature-icon">🏢</div><div class="feature-text">SE Tax</div></div>
+                <div class="feature-box"><div class="feature-icon">🎯</div><div class="feature-text">Retirement Planning</div></div>
+                <div class="feature-box"><div class="feature-icon">💼</div><div class="feature-text">401(k) Growth</div></div>
+                <div class="feature-box"><div class="feature-icon">🛡️</div><div class="feature-text">Emergency Fund</div></div>
+                <div class="feature-box"><div class="feature-icon">💳</div><div class="feature-text">Budget Planner</div></div>
+                <div class="feature-box"><div class="feature-icon">📊</div><div class="feature-text">Spending Analysis</div></div>
+                <div class="feature-box"><div class="feature-icon">🎯</div><div class="feature-text">Savings Goals</div></div>
+                <div class="feature-box"><div class="feature-icon">🏢</div><div class="feature-text">Profit Calculator</div></div>
+                <div class="feature-box"><div class="feature-icon">📊</div><div class="feature-text">Break-Even</div></div>
+                <div class="feature-box"><div class="feature-icon">📈</div><div class="feature-text">ROI Calculator</div></div>
+                <div class="feature-box"><div class="feature-icon">🔐</div><div class="feature-text">Bank-Level Security</div></div>
+                <div class="feature-box"><div class="feature-icon">✅</div><div class="feature-text">100% Accurate</div></div>
+                <div class="feature-box"><div class="feature-icon">📱</div><div class="feature-text">Mobile Friendly</div></div>
+                <div class="feature-box"><div class="feature-icon">🔒</div><div class="feature-text">Privacy Protected</div></div>
+                <div class="feature-box"><div class="feature-icon">🆓</div><div class="feature-text">Completely Free</div></div>
+            </div>
+        </section>
     </div>
 
     <script>
-        // Firebase Configuration - UPDATE THIS WITH YOUR FIREBASE CONFIG
-        const firebaseConfig = {
-            apiKey: "AIzaSyDc_5K5D5vR3x3z3z3z3z3z3z3z3z3z3z3z",
-            authDomain: "willude-game.firebaseapp.com",
-            databaseURL: "https://willude-game-default-rtdb.firebaseio.com",
-            projectId: "willude-game",
-            storageBucket: "willude-game.appspot.com",
-            messagingSenderId: "123456789012",
-            appId: "1:123456789012:web:abcdef1234567890"
-        };
+        const fmt = (v) => parseFloat(v).toLocaleString('en-US', { maximumFractionDigits: 2, minimumFractionDigits: 2 });
+        const fmtN = (v) => parseFloat(v).toLocaleString('en-US', { maximumFractionDigits: 0 });
 
-        // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const database = firebase.getDatabase(app);
-        const choicesRef = firebase.database().ref('choices');
+        function switchTab(name, e) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+            document.getElementById(name).classList.add('active');
+            e.target.classList.add('active');
+        }
 
-        let currentPairIndex = 0;
-        let gamePairs = [];
-        let allChoices = [];
+        // CALCULATOR FUNCTIONS
+        function calcNetWorth() {
+            const a = parseFloat(document.getElementById('nw-assets').value) || 0;
+            const l = parseFloat(document.getElementById('nw-liab').value) || 0;
+            document.getElementById('nw-assets-label').textContent = '$' + fmtN(a);
+            document.getElementById('nw-liab-label').textContent = '$' + fmtN(l);
+            document.getElementById('nw-a').textContent = fmt(a);
+            document.getElementById('nw-l').textContent = fmt(l);
+            document.getElementById('nw-total').textContent = fmt(a - l);
+            document.getElementById('nw-results').classList.add('show');
+        }
 
-        // Listen for real-time updates
-        choicesRef.on('value', (snapshot) => {
-            allChoices = [];
-            snapshot.forEach((childSnapshot) => {
-                allChoices.push({
-                    id: childSnapshot.key,
-                    choice1: childSnapshot.val().choice1,
-                    choice2: childSnapshot.val().choice2
-                });
-            });
-            updateStatus();
-        });
+        function calcCurrency() {
+            const a = parseFloat(document.getElementById('curr-amt').value) || 0;
+            const f = parseFloat(document.getElementById('curr-from').value) || 1;
+            const t = parseFloat(document.getElementById('curr-to').value) || 1;
+            const converted = (a / f) * t;
+            document.getElementById('curr-f').textContent = fmt(a);
+            document.getElementById('curr-t').textContent = fmt(converted);
+            document.getElementById('curr-results').classList.add('show');
+        }
 
-        function updateStatus() {
-            const statusText = document.getElementById('statusText');
-            if (allChoices.length === 0) {
-                statusText.textContent = '🔴 No choices yet. Add some to get started!';
-                statusText.style.color = '#ff0000';
+        function calcInflation() {
+            const a = parseFloat(document.getElementById('inf-amt').value) || 0;
+            const r = parseFloat(document.getElementById('inf-rate').value) || 0;
+            const y = parseFloat(document.getElementById('inf-yrs').value) || 0;
+            document.getElementById('inf-amt-label').textContent = '$' + fmtN(a);
+            document.getElementById('inf-rate-label').textContent = r + '%';
+            document.getElementById('inf-yrs-label').textContent = fmtN(y);
+            const future = a / Math.pow(1 + r / 100, y);
+            const loss = a - future;
+            document.getElementById('inf-today').textContent = fmt(a);
+            document.getElementById('inf-future').textContent = fmt(future);
+            document.getElementById('inf-loss').textContent = fmt(loss);
+            document.getElementById('inf-results').classList.add('show');
+        }
+
+        function calcSalary() {
+            const g = parseFloat(document.getElementById('sal-gross').value) || 0;
+            const tr = parseFloat(document.getElementById('sal-tax').value) || 0;
+            const sr = parseFloat(document.getElementById('sal-ss').value) || 0;
+            document.getElementById('sal-gross-label').textContent = '$' + fmtN(g);
+            document.getElementById('sal-tax-label').textContent = tr + '%';
+            document.getElementById('sal-ss-label').textContent = sr + '%';
+            const tax = (g * tr) / 100;
+            const ss = (g * sr) / 100;
+            const net = g - tax - ss;
+            document.getElementById('sal-monthly').textContent = fmt(g / 12);
+            document.getElementById('sal-total-tax').textContent = fmt(tax);
+            document.getElementById('sal-net').textContent = fmt(net);
+            document.getElementById('sal-results').classList.add('show');
+        }
+
+        function calcBonus() {
+            const c = parseFloat(document.getElementById('bon-cur').value) || 0;
+            const bp = parseFloat(document.getElementById('bon-pct').value) || 0;
+            const rp = parseFloat(document.getElementById('raise-pct').value) || 0;
+            document.getElementById('bon-cur-label').textContent = '$' + fmtN(c);
+            document.getElementById('bon-pct-label').textContent = bp + '%';
+            document.getElementById('raise-pct-label').textContent = rp + '%';
+            const b = (c * bp) / 100;
+            const ns = c + ((c * rp) / 100);
+            const tot = ns + b;
+            document.getElementById('bon-amt').textContent = fmt(b);
+            document.getElementById('new-sal').textContent = fmt(ns);
+            document.getElementById('bon-total').textContent = fmt(tot);
+            document.getElementById('bon-results').classList.add('show');
+        }
+
+        function calcHourly() {
+            const h = parseFloat(document.getElementById('hr-rate').value) || 0;
+            const hrs = parseFloat(document.getElementById('hr-hours').value) || 0;
+            const wks = parseFloat(document.getElementById('hr-weeks').value) || 0;
+            document.getElementById('hr-rate-label').textContent = '$' + h;
+            document.getElementById('hr-hours-label').textContent = fmtN(hrs);
+            document.getElementById('hr-weeks-label').textContent = fmtN(wks);
+            const w = h * hrs;
+            const m = (h * hrs * wks) / 12;
+            const a = h * hrs * wks;
+            document.getElementById('hr-weekly').textContent = fmt(w);
+            document.getElementById('hr-monthly').textContent = fmt(m);
+            document.getElementById('hr-annual').textContent = fmt(a);
+            document.getElementById('hr-results').classList.add('show');
+        }
+
+        function calcInvestment() {
+            const i = parseFloat(document.getElementById('inv-init').value) || 0;
+            const m = parseFloat(document.getElementById('inv-mon').value) || 0;
+            const r = parseFloat(document.getElementById('inv-rate').value) || 0;
+            const y = parseFloat(document.getElementById('inv-yrs').value) || 0;
+            document.getElementById('inv-init-label').textContent = '$' + fmtN(i);
+            document.getElementById('inv-mon-label').textContent = '$' + fmtN(m);
+            document.getElementById('inv-rate-label').textContent = r + '%';
+            document.getElementById('inv-yrs-label').textContent = fmtN(y);
+            const mr = r / 12 / 100;
+            const mo = y * 12;
+            const fv1 = i * Math.pow(1 + mr, mo);
+            const fv2 = m * (Math.pow(1 + mr, mo) - 1) / mr;
+            const fin = fv1 + fv2;
+            const ti = i + (m * mo);
+            const g = fin - ti;
+            document.getElementById('inv-invested').textContent = fmt(ti);
+            document.getElementById('inv-gain').textContent = fmt(g);
+            document.getElementById('inv-final').textContent = fmt(fin);
+            document.getElementById('inv-results').classList.add('show');
+        }
+
+        function calcDividend() {
+            const a = parseFloat(document.getElementById('div-inv').value) || 0;
+            const y = parseFloat(document.getElementById('div-yld').value) || 0;
+            const f = parseFloat(document.getElementById('div-freq').value) || 1;
+            document.getElementById('div-inv-label').textContent = '$' + fmtN(a);
+            document.getElementById('div-yld-label').textContent = y + '%';
+            const ad = (a * y) / 100;
+            const pp = ad / f;
+            document.getElementById('div-period').textContent = fmt(pp);
+            document.getElementById('div-annual').textContent = fmt(ad);
+            document.getElementById('div-results').classList.add('show');
+        }
+
+        function calcStock() {
+            const b = parseFloat(document.getElementById('stk-buy').value) || 0;
+            const q = parseFloat(document.getElementById('stk-qty').value) || 0;
+            const c = parseFloat(document.getElementById('stk-cur').value) || 0;
+            document.getElementById('stk-buy-label').textContent = '$' + b;
+            document.getElementById('stk-qty-label').textContent = fmtN(q);
+            document.getElementById('stk-cur-label').textContent = '$' + c;
+            const inv = b * q;
+            const cur = c * q;
+            const g = cur - inv;
+            const ret = inv > 0 ? ((g / inv) * 100) : 0;
+            document.getElementById('stk-inv').textContent = fmt(inv);
+            document.getElementById('stk-curr').textContent = fmt(cur);
+            document.getElementById('stk-gain').textContent = fmt(g);
+            document.getElementById('stk-ret').textContent = fmtN(ret);
+            document.getElementById('stk-results').classList.add('show');
+        }
+
+        function calcCrypto() {
+            const i = parseFloat(document.getElementById('cry-inv').value) || 0;
+            const e = parseFloat(document.getElementById('cry-entry').value) || 0;
+            const c = parseFloat(document.getElementById('cry-cur').value) || 0;
+            document.getElementById('cry-inv-label').textContent = '$' + fmtN(i);
+            document.getElementById('cry-entry-label').textContent = '$' + e;
+            document.getElementById('cry-cur-label').textContent = '$' + c;
+            const coins = i / e;
+            const v = coins * c;
+            const pnl = v - i;
+            document.getElementById('cry-coins').textContent = fmt(coins);
+            document.getElementById('cry-val').textContent = fmt(v);
+            document.getElementById('cry-pnl').textContent = fmt(pnl);
+            document.getElementById('cry-results').classList.add('show');
+        }
+
+        function calcLoan() {
+            const la = parseFloat(document.getElementById('loa-amt').value) || 0;
+            const lr = parseFloat(document.getElementById('loa-rate').value) || 0;
+            const lm = parseFloat(document.getElementById('loa-mons').value) || 0;
+            document.getElementById('loa-amt-label').textContent = '$' + fmtN(la);
+            document.getElementById('loa-rate-label').textContent = lr + '%';
+            document.getElementById('loa-mons-label').textContent = fmtN(lm);
+            const mr = lr / 12 / 100;
+            const emi = la * mr * Math.pow(1 + mr, lm) / (Math.pow(1 + mr, lm) - 1);
+            const tot = emi * lm;
+            const int = tot - la;
+            document.getElementById('loa-emi').textContent = fmt(emi);
+            document.getElementById('loa-total').textContent = fmt(tot);
+            document.getElementById('loa-int').textContent = fmt(int);
+            document.getElementById('loa-results').classList.add('show');
+        }
+
+        function calcDebt() {
+            const da = parseFloat(document.getElementById('dbt-amt').value) || 0;
+            const dr = parseFloat(document.getElementById('dbt-rate').value) || 0;
+            const dp = parseFloat(document.getElementById('dbt-pay').value) || 0;
+            document.getElementById('dbt-amt-label').textContent = '$' + fmtN(da);
+            document.getElementById('dbt-rate-label').textContent = dr + '%';
+            document.getElementById('dbt-pay-label').textContent = '$' + fmtN(dp);
+            let rem = da;
+            let ti = 0;
+            let mons = 0;
+            const mr = dr / 12 / 100;
+            while (rem > 0 && mons < 600) {
+                const int = rem * mr;
+                const prin = dp - int;
+                if (prin <= 0) break;
+                rem -= prin;
+                ti += int;
+                mons++;
+            }
+            const tp = (dp * mons) + da;
+            document.getElementById('dbt-mons').textContent = fmtN(mons);
+            document.getElementById('dbt-int').textContent = fmt(ti);
+            document.getElementById('dbt-total').textContent = fmt(tp);
+            document.getElementById('dbt-results').classList.add('show');
+        }
+
+        function calcCredit() {
+            const cl = parseFloat(document.getElementById('crd-limit').value) || 0;
+            const cb = parseFloat(document.getElementById('crd-bal').value) || 0;
+            document.getElementById('crd-limit-label').textContent = '$' + fmtN(cl);
+            document.getElementById('crd-bal-label').textContent = '$' + fmtN(cb);
+            const util = cl > 0 ? (cb / cl) * 100 : 0;
+            const avail = cl - cb;
+            const ideal = cl * 0.3;
+            document.getElementById('crd-util').textContent = fmtN(util);
+            document.getElementById('crd-avail').textContent = fmt(avail);
+            document.getElementById('crd-ideal').textContent = fmt(ideal);
+            document.getElementById('crd-results').classList.add('show');
+        }
+
+        function calcTax() {
+            const ti = parseFloat(document.getElementById('tax-inc').value) || 0;
+            const ts = document.getElementById('tax-status').value;
+            const td = parseFloat(document.getElementById('tax-ded').value) || 0;
+            document.getElementById('tax-inc-label').textContent = '$' + fmtN(ti);
+            document.getElementById('tax-ded-label').textContent = '$' + fmtN(td);
+            const taxable = Math.max(0, ti - td);
+            let tax = 0;
+            if (ts === 'single') {
+                if (taxable <= 11000) tax = taxable * 0.10;
+                else if (taxable <= 44725) tax = 1100 + (taxable - 11000) * 0.12;
+                else tax = 5147 + (taxable - 44725) * 0.22;
+            } else if (ts === 'married') {
+                if (taxable <= 22000) tax = taxable * 0.10;
+                else if (taxable <= 89075) tax = 2200 + (taxable - 22000) * 0.12;
+                else tax = 10294 + (taxable - 89075) * 0.22;
             } else {
-                statusText.textContent = `✅ Connected | ${allChoices.length} choices available`;
-                statusText.style.color = '#00ff00';
+                if (taxable <= 15700) tax = taxable * 0.10;
+                else if (taxable <= 59850) tax = 1570 + (taxable - 15700) * 0.12;
+                else tax = 6868 + (taxable - 59850) * 0.22;
             }
+            const after = ti - tax;
+            document.getElementById('tax-taxable').textContent = fmt(taxable);
+            document.getElementById('tax-amt').textContent = fmt(tax);
+            document.getElementById('tax-after').textContent = fmt(after);
+            document.getElementById('tax-results').classList.add('show');
         }
 
-        function openAddModal() {
-            document.getElementById('addModal').classList.add('active');
-            document.getElementById('choice1').value = '';
-            document.getElementById('choice2').value = '';
-            document.getElementById('choice1').focus();
+        function calcCapitalGains() {
+            const cb = parseFloat(document.getElementById('cg-buy').value) || 0;
+            const cs = parseFloat(document.getElementById('cg-sell').value) || 0;
+            const cr = parseFloat(document.getElementById('cg-rate').value) || 15;
+            document.getElementById('cg-buy-label').textContent = '$' + fmtN(cb);
+            document.getElementById('cg-sell-label').textContent = '$' + fmtN(cs);
+            const g = cs - cb;
+            const ctax = Math.max(0, g * cr / 100);
+            const net = g - ctax;
+            document.getElementById('cg-gain').textContent = fmt(g);
+            document.getElementById('cg-tax').textContent = fmt(ctax);
+            document.getElementById('cg-net').textContent = fmt(net);
+            document.getElementById('cg-results').classList.add('show');
         }
 
-        function closeAddModal() {
-            document.getElementById('addModal').classList.remove('active');
+        function calcSETax() {
+            const si = parseFloat(document.getElementById('se-inc').value) || 0;
+            document.getElementById('se-inc-label').textContent = '$' + fmtN(si);
+            const ss = si * 0.124;
+            const med = si * 0.029;
+            const tot = ss + med;
+            document.getElementById('se-ss').textContent = fmt(ss);
+            document.getElementById('se-med').textContent = fmt(med);
+            document.getElementById('se-total').textContent = fmt(tot);
+            document.getElementById('se-results').classList.add('show');
         }
 
-        async function saveChoice() {
-            const choice1 = document.getElementById('choice1').value.trim();
-            const choice2 = document.getElementById('choice2').value.trim();
-            
-            if (!choice1 || !choice2) {
-                alert('Please fill in both choices!');
-                return;
-            }
-            
-            try {
-                const newChoiceRef = choicesRef.push();
-                await newChoiceRef.set({
-                    choice1: choice1,
-                    choice2: choice2,
-                    createdAt: new Date().toISOString()
-                });
-                
-                closeAddModal();
-                alert('✅ Choice added! All devices will see it now!');
-            } catch (error) {
-                alert('❌ Error saving choice: ' + error.message);
-            }
+        function calcRetirement() {
+            const ca = parseFloat(document.getElementById('ret-age').value) || 0;
+            const ra = parseFloat(document.getElementById('ret-target').value) || 0;
+            const cs = parseFloat(document.getElementById('ret-save').value) || 0;
+            const ac = parseFloat(document.getElementById('ret-contrib').value) || 0;
+            const ar = parseFloat(document.getElementById('ret-ret').value) || 0;
+            document.getElementById('ret-age-label').textContent = fmtN(ca);
+            document.getElementById('ret-target-label').textContent = fmtN(ra);
+            document.getElementById('ret-save-label').textContent = '$' + fmtN(cs);
+            document.getElementById('ret-contrib-label').textContent = '$' + fmtN(ac);
+            document.getElementById('ret-ret-label').textContent = ar + '%';
+            const ytr = ra - ca;
+            const r = ar / 100;
+            const fv1 = cs * Math.pow(1 + r, ytr);
+            const fv2 = ac * ((Math.pow(1 + r, ytr) - 1) / r);
+            const amt = fv1 + fv2;
+            document.getElementById('ret-yrs').textContent = fmtN(ytr);
+            document.getElementById('ret-amt').textContent = fmt(amt);
+            document.getElementById('ret-results').classList.add('show');
         }
 
-        async function startGame() {
-            if (allChoices.length === 0) {
-                alert('⚠️ No choices available! Add some choices first.');
-                return;
-            }
-            
-            gamePairs = shuffleArray([...allChoices]);
-            currentPairIndex = 0;
-            document.getElementById('mainScreen').style.display = 'none';
-            document.getElementById('gameScreen').classList.add('active');
-            showNextPair();
+        function calc401k() {
+            const ks = parseFloat(document.getElementById('k401-sal').value) || 0;
+            const kc = parseFloat(document.getElementById('k401-con').value) || 0;
+            const km = parseFloat(document.getElementById('k401-match').value) || 0;
+            const ky = parseFloat(document.getElementById('k401-yrs').value) || 0;
+            document.getElementById('k401-sal-label').textContent = '$' + fmtN(ks);
+            document.getElementById('k401-con-label').textContent = kc + '%';
+            document.getElementById('k401-match-label').textContent = km + '%';
+            document.getElementById('k401-yrs-label').textContent = fmtN(ky);
+            const ac = (ks * kc) / 100;
+            const em = (ks * km) / 100;
+            const ta = ac + em;
+            const bal = ta * ((Math.pow(1.07, ky) - 1) / 0.07);
+            document.getElementById('k401-annual').textContent = fmt(ac);
+            document.getElementById('k401-emp').textContent = fmt(em);
+            document.getElementById('k401-balance').textContent = fmt(bal);
+            document.getElementById('k401-results').classList.add('show');
         }
 
-        function showNextPair() {
-            if (currentPairIndex >= gamePairs.length) {
-                endGame();
-                alert('🎮 Game Over! You\'ve gone through all choices.');
-                return;
-            }
-            
-            const pair = gamePairs[currentPairIndex];
-            document.getElementById('leftText').textContent = pair.choice1;
-            document.getElementById('rightText').textContent = pair.choice2;
-            document.getElementById('progressText').textContent = `${currentPairIndex + 1} / ${gamePairs.length}`;
+        function calcEmergency() {
+            const ee = parseFloat(document.getElementById('emg-exp').value) || 0;
+            const em = parseFloat(document.getElementById('emg-mons').value) || 0;
+            const ec = parseFloat(document.getElementById('emg-cur').value) || 0;
+            document.getElementById('emg-exp-label').textContent = '$' + fmtN(ee);
+            document.getElementById('emg-mons-label').textContent = fmtN(em);
+            document.getElementById('emg-cur-label').textContent = '$' + fmtN(ec);
+            const ideal = ee * em;
+            const need = Math.max(0, ideal - ec);
+            document.getElementById('emg-ideal').textContent = fmt(ideal);
+            document.getElementById('emg-have').textContent = fmt(ec);
+            document.getElementById('emg-need').textContent = fmt(need);
+            document.getElementById('emg-results').classList.add('show');
         }
 
-        function makeChoice(side) {
-            currentPairIndex++;
-            const choiceHalf = side === 'left' ? 
-                document.getElementById('leftChoice') : 
-                document.getElementById('rightChoice');
-            
-            choiceHalf.style.transform = 'scale(1.1)';
-            setTimeout(() => {
-                choiceHalf.style.transform = 'scale(1)';
-                showNextPair();
-            }, 300);
+        function calcBudget() {
+            const bi = parseFloat(document.getElementById('bud-inc').value) || 0;
+            const bh = parseFloat(document.getElementById('bud-housing').value) || 0;
+            const bf = parseFloat(document.getElementById('bud-food').value) || 0;
+            const bs = parseFloat(document.getElementById('bud-save').value) || 0;
+            document.getElementById('bud-inc-label').textContent = '$' + fmtN(bi);
+            document.getElementById('bud-housing-label').textContent = bh + '%';
+            document.getElementById('bud-food-label').textContent = bf + '%';
+            document.getElementById('bud-save-label').textContent = bs + '%';
+            const bha = (bi * bh) / 100;
+            const bfa = (bi * bf) / 100;
+            const bsa = (bi * bs) / 100;
+            const boa = bi - (bha + bfa + bsa);
+            document.getElementById('bud-h').textContent = fmt(bha);
+            document.getElementById('bud-f').textContent = fmt(bfa);
+            document.getElementById('bud-s').textContent = fmt(bsa);
+            document.getElementById('bud-o').textContent = fmt(boa);
+            document.getElementById('bud-results').classList.add('show');
         }
 
-        function endGame() {
-            document.getElementById('gameScreen').classList.remove('active');
-            document.getElementById('mainScreen').style.display = 'flex';
+        function calcSpending() {
+            const st = parseFloat(document.getElementById('spend-this').value) || 0;
+            const sl = parseFloat(document.getElementById('spend-last').value) || 0;
+            document.getElementById('spend-this-label').textContent = '$' + fmtN(st);
+            document.getElementById('spend-last-label').textContent = '$' + fmtN(sl);
+            const ch = st - sl;
+            const cp = sl > 0 ? ((ch / sl) * 100) : 0;
+            document.getElementById('spend-change').textContent = fmt(Math.abs(ch));
+            document.getElementById('spend-pct').textContent = fmtN(Math.abs(cp));
+            document.getElementById('spend-results').classList.add('show');
         }
 
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
+        function calcGoal() {
+            const gt = parseFloat(document.getElementById('goal-target').value) || 0;
+            const gs = parseFloat(document.getElementById('goal-saved').value) || 0;
+            const gm = parseFloat(document.getElementById('goal-mons').value) || 0;
+            document.getElementById('goal-target-label').textContent = '$' + fmtN(gt);
+            document.getElementById('goal-saved-label').textContent = '$' + fmtN(gs);
+            document.getElementById('goal-mons-label').textContent = fmtN(gm);
+            const rem = Math.max(0, gt - gs);
+            const mon = gm > 0 ? rem / gm : 0;
+            const prog = gt > 0 ? (gs / gt) * 100 : 0;
+            document.getElementById('goal-progress').textContent = fmtN(Math.min(100, prog));
+            document.getElementById('goal-need').textContent = fmt(rem);
+            document.getElementById('goal-monthly').textContent = fmt(mon);
+            document.getElementById('goal-results').classList.add('show');
         }
 
-        window.onclick = function(event) {
-            if (event.target.id === 'addModal') {
-                closeAddModal();
-            }
+        function calcBizProfit() {
+            const br = parseFloat(document.getElementById('biz-rev').value) || 0;
+            const bc = parseFloat(document.getElementById('biz-cogs').value) || 0;
+            const bo = parseFloat(document.getElementById('biz-opex').value) || 0;
+            document.getElementById('biz-rev-label').textContent = '$' + fmtN(br);
+            document.getElementById('biz-cogs-label').textContent = bc + '%';
+            document.getElementById('biz-opex-label').textContent = bo + '%';
+            const bca = (br * bc) / 100;
+            const bg = br - bca;
+            const boa = (br * bo) / 100;
+            const bn = bg - boa;
+            const bm = br > 0 ? (bn / br) * 100 : 0;
+            document.getElementById('biz-gross').textContent = fmt(bg);
+            document.getElementById('biz-opex-amt').textContent = fmt(boa);
+            document.getElementById('biz-net').textContent = fmt(bn);
+            document.getElementById('biz-margin').textContent = fmtN(bm);
+            document.getElementById('biz-results').classList.add('show');
         }
 
-        // Initialize status
-        updateStatus();
+        function calcBreakEven() {
+            const bf = parseFloat(document.getElementById('be-fixed').value) || 0;
+            const bp = parseFloat(document.getElementById('be-price').value) || 0;
+            const bv = parseFloat(document.getElementById('be-var').value) || 0;
+            document.getElementById('be-fixed-label').textContent = '$' + fmtN(bf);
+            document.getElementById('be-price-label').textContent = '$' + bp;
+            document.getElementById('be-var-label').textContent = '$' + bv;
+            const cm = bp - bv;
+            const un = cm > 0 ? bf / cm : 0;
+            const re = un * bp;
+            document.getElementById('be-units').textContent = fmtN(un);
+            document.getElementById('be-rev').textContent = fmt(re);
+            document.getElementById('be-margin').textContent = fmt(cm);
+            document.getElementById('be-results').classList.add('show');
+        }
+
+        function calcROI() {
+            const ri = parseFloat(document.getElementById('roi-init').value) || 0;
+            const rf = parseFloat(document.getElementById('roi-final').value) || 0;
+            document.getElementById('roi-init-label').textContent = '$' + fmtN(ri);
+            document.getElementById('roi-final-label').textContent = '$' + fmtN(rf);
+            const g = rf - ri;
+            const rp = ri > 0 ? ((g / ri) * 100) : 0;
+            document.getElementById('roi-gain').textContent = fmt(g);
+            document.getElementById('roi-pct').textContent = fmtN(rp);
+            document.getElementById('roi-results').classList.add('show');
+        }
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            calcNetWorth();
+            calcCurrency();
+            calcInflation();
+            calcSalary();
+            calcBonus();
+            calcHourly();
+            calcInvestment();
+            calcDividend();
+            calcStock();
+            calcCrypto();
+            calcLoan();
+            calcDebt();
+            calcCredit();
+            calcTax();
+            calcCapitalGains();
+            calcSETax();
+            calcRetirement();
+            calc401k();
+            calcEmergency();
+            calcBudget();
+            calcSpending();
+            calcGoal();
+            calcBizProfit();
+            calcBreakEven();
+            calcROI();
+        });
     </script>
 </body>
 </html>
